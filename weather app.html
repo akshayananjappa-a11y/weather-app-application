@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>India States Weather App</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<style>
+body{
+  margin:0;
+  font-family:'Segoe UI',sans-serif;
+  background:linear-gradient(-45deg,#2193b0,#6dd5ed,#00c6ff,#0072ff);
+  background-size:400% 400%;
+  animation:gradientBG 12s ease infinite;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  min-height:100vh;
+  color:#fff;
+  transition:0.6s;
+}
+
+@keyframes gradientBG{
+  0%{background-position:0% 50%;}
+  50%{background-position:100% 50%;}
+  100%{background-position:0% 50%;}
+}
+
+.card{
+  width:95%;
+  max-width:420px;
+  max-height:90vh;
+  overflow-y:auto;
+  background:rgba(255,255,255,0.15);
+  backdrop-filter:blur(15px);
+  padding:25px;
+  border-radius:25px;
+  box-shadow:0 20px 40px rgba(0,0,0,.4);
+  animation:fadeIn 1s ease;
+  transition:0.4s;
+}
+
+.card:hover{
+  transform:translateY(-5px);
+}
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(20px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+input{
+  width:100%;
+  padding:12px;
+  border-radius:30px;
+  border:none;
+  margin-bottom:8px;
+  outline:none;
+  font-size:14px;
+  transition:0.3s;
+}
+
+input:focus{
+  box-shadow:0 0 10px #fff;
+}
+
+.city-list{
+  background:white;
+  color:black;
+  border-radius:15px;
+  display:none;
+  max-height:150px;
+  overflow-y:auto;
+  animation:fadeIn 0.3s ease;
+}
+
+.city-list div{
+  padding:10px;
+  cursor:pointer;
+  transition:0.2s;
+}
+
+.city-list div:hover{
+  background:#f0f0f0;
+}
+
+h2,h3,p{
+  text-align:center;
+  margin:6px 0;
+}
+
+#temp{
+  font-size:45px;
+  font-weight:bold;
+  animation:fadeIn 0.6s ease;
+}
+
+.hourly{
+  display:flex;
+  overflow-x:auto;
+  padding-bottom:5px;
+}
+
+.hourly::-webkit-scrollbar{
+  height:6px;
+}
+
+.hourly::-webkit-scrollbar-thumb{
+  background:white;
+  border-radius:10px;
+}
+
+.box{
+  min-width:75px;
+  background:rgba(255,255,255,0.9);
+  color:black;
+  margin:5px;
+  padding:8px;
+  border-radius:15px;
+  text-align:center;
+  font-size:12px;
+  transition:0.3s;
+}
+
+.box:hover{
+  transform:scale(1.08);
+}
+
+.day{
+  background:rgba(255,255,255,0.9);
+  color:black;
+  margin:6px 0;
+  padding:10px;
+  border-radius:15px;
+  display:flex;
+  justify-content:space-between;
+  transition:0.3s;
+}
+
+.day:hover{
+  transform:scale(1.03);
+}
+
+@media(max-width:400px){
+  .card{padding:18px;}
+}
+</style>
+</head>
+
+<body>
+
+<div class="card">
+
+<input type="text" placeholder="Search State"
+onfocus="showList()" onkeyup="filterCity(this.value)">
+
+<div class="city-list" id="cities">
+
+<div onclick="getWeather('Karnataka',12.97,77.59)">Karnataka</div>
+<div onclick="getWeather('Tamil Nadu',13.08,80.27)">Tamil Nadu</div>
+<div onclick="getWeather('Maharashtra',19.07,72.87)">Maharashtra</div>
+<div onclick="getWeather('Delhi',28.61,77.20)">Delhi</div>
+<div onclick="getWeather('Kerala',8.52,76.93)">Kerala</div>
+<div onclick="getWeather('Gujarat',23.21,72.63)">Gujarat</div>
+<div onclick="getWeather('Rajasthan',26.91,75.79)">Rajasthan</div>
+<div onclick="getWeather('West Bengal',22.57,88.36)">West Bengal</div>
+
+</div>
+
+<h2 id="city">Select State</h2>
+<p id="time">--:--:--</p>
+<h1 id="temp">--°C</h1>
+<p id="wind"></p>
+
+<h3>Hourly Forecast</h3>
+<div class="hourly" id="hourly"></div>
+
+<h3>7 Day Forecast</h3>
+<div id="daily"></div>
+
+</div>
+
+<script>
+
+function showList(){
+  document.getElementById("cities").style.display="block";
+}
+
+function filterCity(value){
+  let list=document.getElementById("cities").children;
+  for(let i=0;i<list.length;i++){
+    list[i].style.display=
+    list[i].innerText.toLowerCase().includes(value.toLowerCase())
+    ?"block":"none";
+  }
+}
+
+function getWeather(name,lat,lon){
+
+  document.getElementById("city").innerText=name;
+  document.getElementById("cities").style.display="none";
+
+  fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&hourly=temperature_2m&daily=temperature_2m_max,temperature_2m_min&timezone=auto`)
+  .then(response=>response.json())
+  .then(data=>{
+
+    let temp=data.current_weather.temperature;
+
+    document.getElementById("temp").innerText=temp+"°C";
+    document.getElementById("wind").innerText=
+    "Wind: "+data.current_weather.windspeed+" km/h";
+
+    // Dynamic Background Color
+    if(temp<20){
+      document.body.style.background="linear-gradient(-45deg,#1e3c72,#2a5298,#0f2027,#203a43)";
+    }
+    else if(temp>=20 && temp<=30){
+      document.body.style.background="linear-gradient(-45deg,#11998e,#38ef7d,#56ab2f,#a8e063)";
+    }
+    else{
+      document.body.style.background="linear-gradient(-45deg,#f12711,#f5af19,#ff512f,#dd2476)";
+    }
+
+    // Hourly
+    let hourlyHTML="";
+    for(let i=0;i<6;i++){
+      hourlyHTML+=
+      `<div class="box">
+        ${data.hourly.time[i].split("T")[1]}<br>
+        ${data.hourly.temperature_2m[i]}°C
+      </div>`;
+    }
+    document.getElementById("hourly").innerHTML=hourlyHTML;
+
+    // Daily
+    let dailyHTML="";
+    for(let i=0;i<7;i++){
+      dailyHTML+=
+      `<div class="day">
+        <span>${data.daily.time[i]}</span>
+        <span>${data.daily.temperature_2m_min[i]}° /
+        ${data.daily.temperature_2m_max[i]}°C</span>
+      </div>`;
+    }
+    document.getElementById("daily").innerHTML=dailyHTML;
+
+  });
+}
+
+// Live Clock
+setInterval(()=>{
+  document.getElementById("time").innerText=
+  new Date().toLocaleTimeString();
+},1000);
+
+</script>
+
+</body>
+</html>
